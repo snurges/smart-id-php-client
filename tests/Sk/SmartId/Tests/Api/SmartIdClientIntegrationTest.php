@@ -116,6 +116,12 @@ class SmartIdClientIntegrationTest extends Setup
 
       // Calculate verification code
       $this->assertEquals('4664', $dataToSign->calculateVerificationCode());
+
+      $certificateResponse = $this->client->signing()
+          ->getCertificate()
+          ->withCountryCode('EE')
+          ->withNationalIdentityNumber('31111111111')
+          ->withCertificateLevel('ADVANCED');
   }
 
 }
