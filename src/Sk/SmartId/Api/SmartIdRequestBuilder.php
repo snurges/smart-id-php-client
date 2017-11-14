@@ -102,4 +102,14 @@ abstract class SmartIdRequestBuilder
       throw new InvalidParametersException( 'Relying Party Name parameter must be set' );
     }
   }
+
+    /**
+     * @return bool
+     */
+    protected function hasNationalIdentity()
+    {
+        return isset( $this->nationalIdentity )
+            || ( strlen( $this->countryCode ) && strlen( $this->nationalIdentityNumber ) );
+    }
+
 }

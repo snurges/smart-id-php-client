@@ -4,6 +4,7 @@ namespace Sk\SmartId\Tests\Api;
 use Sk\SmartId\Api\AuthenticationResponseValidator;
 use Sk\SmartId\Api\Data\AuthenticationHash;
 use Sk\SmartId\Api\Data\AuthenticationIdentity;
+use Sk\SmartId\Api\Data\SignableData;
 use Sk\SmartId\Api\Data\SmartIdAuthenticationResponse;
 use Sk\SmartId\Api\Data\SmartIdAuthenticationResult;
 use Sk\SmartId\Tests\Setup;
@@ -103,4 +104,23 @@ class SmartIdClientIntegrationTest extends Setup
     $this->assertNotEmpty( $authenticationIdentity->getIdentityCode() );
     $this->assertNotEmpty( $authenticationIdentity->getCountry() );
   }
+
+  /**
+   * @test
+   */
+  public function getCertificateAndSignFullExample()
+  {
+      // Provide data bytes to be signed (Default hash type is SHA-512)
+      $dataToSign = new AuthenticationHash(ord('Hello World!'));
+
+      // Calculate verification code
+      $this->assertEquals('4664', $dataToSign->calculateVerificationCode());
+
+      $certificateResponse = $this->client->signing()
+          ->getCertificate()
+          ->withCountryCode('EE')
+          ->withNationalIdentityNumber('31111111111')
+          ->withCertificateLevel('ADVANCED');
+  }
+
 }

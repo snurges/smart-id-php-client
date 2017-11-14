@@ -5,6 +5,7 @@ use InvalidArgumentException;
 use Sk\SmartId\Api\AbstractApi;
 use Sk\SmartId\Api\ApiType;
 use Sk\SmartId\Api\Authentication;
+use Sk\SmartId\Api\Signing;
 
 class Client
 {
@@ -44,6 +45,11 @@ class Client
         return $this->authentication();
       }
 
+        case ApiType::SIGNING:
+        {
+            return $this->signing();
+        }
+
       default:
       {
         throw new InvalidArgumentException( 'No such api at present time!' );
@@ -63,6 +69,19 @@ class Client
 
     return $this->apis['authentication'];
   }
+
+    /**
+     * @return Signing
+     */
+    public function signing()
+    {
+        if( !isset($this->apis['signing']))
+        {
+            $this->apis['signing'] = new Signing($this);
+        }
+
+        return $this->apis['signing'];
+    }
 
   /**
    * @param string $relyingPartyUUID

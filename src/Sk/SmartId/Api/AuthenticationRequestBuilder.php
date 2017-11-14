@@ -283,15 +283,6 @@ class AuthenticationRequestBuilder extends SmartIdRequestBuilder
   /**
    * @return bool
    */
-  private function hasNationalIdentity()
-  {
-    return isset( $this->nationalIdentity )
-           || ( strlen( $this->countryCode ) && strlen( $this->nationalIdentityNumber ) );
-  }
-
-  /**
-   * @return bool
-   */
   private function isSignableDataSet()
   {
     return isset( $this->dataToSign );
