@@ -106,7 +106,6 @@ class SmartIdClientIntegrationTest extends Setup
   }
 
   /**
-   * @group testing
    * @test
    */
   public function getCertificateAndSignFullExample()

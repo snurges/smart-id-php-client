@@ -3,6 +3,7 @@ namespace Sk\SmartId\Tests\Rest;
 
 use Sk\SmartId\Api\Data\AuthenticationSessionRequest;
 use Sk\SmartId\Api\Data\AuthenticationSessionResponse;
+use Sk\SmartId\Api\Data\CertificateChoiceResponse;
 use Sk\SmartId\Api\Data\NationalIdentity;
 use Sk\SmartId\Api\Data\SessionStatus;
 use Sk\SmartId\Api\Data\SessionStatusRequest;
@@ -15,6 +16,11 @@ class SmartIdConnectorSpy implements SmartIdConnector
    * @var AuthenticationSessionResponse
    */
   public $authenticationSessionResponseToRespond;
+
+    /**
+     * @var CertificateChoiceResponse
+     */
+    public $certificateChoiceToRespond;
 
   /**
    * @var string

@@ -121,12 +121,27 @@ class CertificateRequestBuilder extends SmartIdRequestBuilder {
     public function fetch()
     {
         $this->validateParameters();
+        $request = $this->createCertificateRequest();
 
     }
 
     private function createCertificateRequest()
     {
         $request = new CertificateRequest();
+        $request->setRelyingPartyUUID($this->getRelyingPartyUUID())
+            ->setRelyingPartyName($this->getRelyingPartyName())
+            ->setCertificateLevel($this->getCertificateLevel())
+            ->setNonce($this->nonce);
+
+        return $request;
+    }
+
+    /**
+     * @return string
+     */
+    private function getCertificateLevel()
+    {
+        return $this->certificateLevel;
     }
 
     /**
