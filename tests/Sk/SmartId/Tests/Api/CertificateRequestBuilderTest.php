@@ -52,15 +52,31 @@ class CertificateRequestBuilderTest extends Setup {
             ->withCertificateLevel(CertificateLevelCode::QUALIFIED)
             ->fetch();
 
-        var_dump($certificate);
+        $this->assertCertificateResponseValid($certificate);
+        $this->assertCorrectSessionResponseMade();
+        $this->assertValidCertificateChoiceRequestMade(CertificateLevelCode::QUALIFIED);
     }
 
     private function assertCertificateResponseValid(SmartIdCertificate $certificate)
     {
         $this->assertNotNull($certificate);
         $this->assertNotNull($certificate->getCertificate());
-        dd($certificate);
-        $cert = $certificate->getCertificate();
+        $this->assertEquals($certificate->getDocumentNumber(), 'PNOEE-31111111111');
+        $this->assertEquals($certificate->getCertificateLevel(), CertificateLevelCode::QUALIFIED);
+    }
+
+    private function assertCorrectSessionResponseMade()
+    {
+        $this->assertEquals('97f5058e-e308-4c83-ac14-7712b0eb9d86', $this->connector->sessionIdUsed);
+    }
+
+    private function assertValidCertificateChoiceRequestMade($certificateLevel)
+    {
+        $this->assertEquals('EE', $this->connector->identityUsed->getCountryCode());
+        $this->assertEquals('31111111111', $this->connector->identityUsed->getNationalIdentityNumber());
+        $this->assertEquals('relying-party-uuid', $this->connector->certificateRequestUsed->getRelyingPartyUUId());
+        $this->assertEquals('relying-party-name', $this->connector->certificateRequestUsed->getRelyingPartyName());
+        $this->assertEquals($certificateLevel, $this->connector->certificateRequestUsed->getCertificateLevel());
     }
 
     private function createCertificateSessionStatusCompleteResponse()

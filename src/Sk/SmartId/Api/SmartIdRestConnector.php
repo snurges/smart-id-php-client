@@ -99,7 +99,7 @@ class SmartIdRestConnector implements SmartIdConnector
             $identity->getCountryCode(),
             $identity->getNationalIdentityNumber(),
         ), $url );
-
+        var_dump($url);
         return $this->postCertificateRequest($url, $request);
     }
 

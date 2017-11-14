@@ -169,6 +169,7 @@ class CertificateRequestBuilder extends SmartIdRequestBuilder {
         else
         {
             $identity = $this->getNationalIdentity();
+
             return $this->getConnector()->getCertificateWithIdentity($identity, $request);
         }
     }
