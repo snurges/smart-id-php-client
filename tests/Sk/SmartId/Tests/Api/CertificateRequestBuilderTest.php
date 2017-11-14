@@ -52,7 +52,7 @@ class CertificateRequestBuilderTest extends Setup {
             ->withCertificateLevel(CertificateLevelCode::QUALIFIED)
             ->fetch();
 
-
+        var_dump($certificate);
     }
 
     private function assertCertificateResponseValid(SmartIdCertificate $certificate)

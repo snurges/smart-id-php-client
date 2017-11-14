@@ -1,6 +1,7 @@
 <?php
 namespace Sk\SmartId\Api;
 
+use Sk\SmartId\Api\Data\NationalIdentity;
 use Sk\SmartId\Exception\InvalidParametersException;
 
 abstract class SmartIdRequestBuilder
@@ -24,6 +25,16 @@ abstract class SmartIdRequestBuilder
    * @var string
    */
   private $relyingPartyName;
+
+    /**
+     * @var string
+     */
+    protected $countryCode;
+
+    /**
+     * @var string
+     */
+    protected $nationalIdentityNumber;
 
   /**
    * @param SmartIdConnector $connector
@@ -86,6 +97,18 @@ abstract class SmartIdRequestBuilder
   {
     return $this->relyingPartyName;
   }
+
+    /**
+     * @return NationalIdentity
+     */
+    protected function getNationalIdentity()
+    {
+        if ( isset( $this->nationalIdentity ) )
+        {
+            return $this->nationalIdentity;
+        }
+        return new NationalIdentity( $this->countryCode, $this->nationalIdentityNumber );
+    }
 
   /**
    * @throws InvalidParametersException

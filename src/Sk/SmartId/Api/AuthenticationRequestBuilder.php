@@ -13,15 +13,6 @@ use Sk\SmartId\Exception\TechnicalErrorException;
 
 class AuthenticationRequestBuilder extends SmartIdRequestBuilder
 {
-  /**
-   * @var string
-   */
-  private $countryCode;
-
-  /**
-   * @var string
-   */
-  private $nationalIdentityNumber;
 
   /**
    * @var NationalIdentity
@@ -250,18 +241,6 @@ class AuthenticationRequestBuilder extends SmartIdRequestBuilder
       $identity = $this->getNationalIdentity();
       return $this->getConnector()->authenticateWithIdentity( $identity, $request );
     }
-  }
-
-  /**
-   * @return NationalIdentity
-   */
-  private function getNationalIdentity()
-  {
-    if ( isset( $this->nationalIdentity ) )
-    {
-      return $this->nationalIdentity;
-    }
-    return new NationalIdentity( $this->countryCode, $this->nationalIdentityNumber );
   }
 
   /**

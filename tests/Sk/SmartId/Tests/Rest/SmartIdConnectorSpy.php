@@ -4,6 +4,7 @@ namespace Sk\SmartId\Tests\Rest;
 use Sk\SmartId\Api\Data\AuthenticationSessionRequest;
 use Sk\SmartId\Api\Data\AuthenticationSessionResponse;
 use Sk\SmartId\Api\Data\CertificateChoiceResponse;
+use Sk\SmartId\Api\Data\CertificateRequest;
 use Sk\SmartId\Api\Data\NationalIdentity;
 use Sk\SmartId\Api\Data\SessionStatus;
 use Sk\SmartId\Api\Data\SessionStatusRequest;
@@ -31,6 +32,11 @@ class SmartIdConnectorSpy implements SmartIdConnector
    * @var AuthenticationSessionRequest
    */
   public $authenticationSessionRequestUsed;
+
+    /**
+     * @var CertificateRequest
+     */
+    public $certificateRequestUsed;
 
   /**
    * @var NationalIdentity
@@ -71,7 +77,27 @@ class SmartIdConnectorSpy implements SmartIdConnector
     return $this->authenticationSessionResponseToRespond;
   }
 
-  /**
+    /**
+     * @param string $documentNumber
+     * @param CertificateRequest $request
+     * @return CertificateChoiceResponse
+     */
+    public function getCertificate($documentNumber, CertificateRequest $request)
+    {
+        $this->documentNumberUsed = $documentNumber;
+        $this->certificateRequestUsed = $request;
+
+        return $this->certificateChoiceToRespond;
+    }
+
+    public function getCertificateWithIdentity(NationalIdentity $identity, CertificateRequest $request)
+    {
+        $this->identityUsed = $identity;
+        $this->certificateRequestUsed = $request;
+        return $this->certificateChoiceToRespond;
+    }
+
+    /**
    * @param SessionStatusRequest $request
    * @throws SessionNotFoundException
    * @return SessionStatus

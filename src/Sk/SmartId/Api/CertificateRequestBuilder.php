@@ -2,21 +2,15 @@
 
 namespace Sk\SmartId\Api;
 
+use Sk\SmartId\Api\Data\CertificateParser;
 use Sk\SmartId\Api\Data\CertificateRequest;
 use Sk\SmartId\Api\Data\NationalIdentity;
+use Sk\SmartId\Api\Data\SessionStatus;
+use Sk\SmartId\Api\Data\SmartIdCertificate;
 use Sk\SmartId\Exception\InvalidParametersException;
+use Sk\SmartId\Exception\TechnicalErrorException;
 
 class CertificateRequestBuilder extends SmartIdRequestBuilder {
-
-    /**
-     * @var string
-     */
-    private $countryCode;
-
-    /**
-     * @var string
-     */
-    private $nationalIdentityNumber;
 
     /**
      * @var NationalIdentity
@@ -122,7 +116,11 @@ class CertificateRequestBuilder extends SmartIdRequestBuilder {
     {
         $this->validateParameters();
         $request = $this->createCertificateRequest();
+        $response = $this->fetchCertificateChoiceSessionResponse($request);
+        $sessionStatus = $this->getSessionStatusPoller()->fetchFinalSessionStatus($response->getSessionID());
+        $smartIdCertificate = $this->createSmartIdCertificate($sessionStatus);
 
+        return $smartIdCertificate;
     }
 
     private function createCertificateRequest()
@@ -134,6 +132,45 @@ class CertificateRequestBuilder extends SmartIdRequestBuilder {
             ->setNonce($this->nonce);
 
         return $request;
+    }
+
+    private function createSmartIdCertificate(SessionStatus $status)
+    {
+        $this->validateCertificateResponse($status);
+        $certificate = $status->getCert();
+
+        $smartIdCertificate = new SmartIdCertificate();
+        $smartIdCertificate->setCertificate(CertificateParser::parseX509Certificate($certificate->getValue()));
+        $smartIdCertificate->setCertificateLevel($certificate->getCertificateLevel());
+        $smartIdCertificate->setDocumentNumber($this->getDocumentNumber($status));
+
+        return $smartIdCertificate;
+    }
+
+    private function validateCertificateResponse(SessionStatus $status)
+    {
+        $certificate = $status->getCert();
+        if($certificate == null || $certificate->getValue() === '')
+        {
+            throw new TechnicalErrorException("Certificate was not present in the session status response");
+        }
+        if($status->getResult()->getDocumentNumber() === '')
+        {
+            throw new TechnicalErrorException("Document number was not present in the session status response");
+        }
+    }
+
+    private function fetchCertificateChoiceSessionResponse(CertificateRequest $request)
+    {
+        if(strlen($this->documentNumber))
+        {
+            return $this->getConnector()->getCertificate($this->documentNumber, $request);
+        }
+        else
+        {
+            $identity = $this->getNationalIdentity();
+            return $this->getConnector()->getCertificateWithIdentity($identity, $request);
+        }
     }
 
     /**
@@ -154,6 +191,13 @@ class CertificateRequestBuilder extends SmartIdRequestBuilder {
         {
             throw new InvalidParametersException( 'Either document number or national identity must be set' );
         }
+    }
+
+    private function getDocumentNumber(SessionStatus $status)
+    {
+        $result = $status->getResult();
+
+        return $result->getDocumentNumber();
     }
 
 }

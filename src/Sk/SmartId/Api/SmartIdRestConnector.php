@@ -3,9 +3,12 @@ namespace Sk\SmartId\Api;
 
 use Sk\SmartId\Api\Data\AuthenticationSessionRequest;
 use Sk\SmartId\Api\Data\AuthenticationSessionResponse;
+use Sk\SmartId\Api\Data\CertificateChoiceResponse;
+use Sk\SmartId\Api\Data\CertificateRequest;
 use Sk\SmartId\Api\Data\NationalIdentity;
 use Sk\SmartId\Api\Data\SessionStatus;
 use Sk\SmartId\Api\Data\SessionStatusRequest;
+use Sk\SmartId\Exception\CertificateNotFoundException;
 use Sk\SmartId\Exception\NotFoundException;
 use Sk\SmartId\Exception\SessionNotFoundException;
 use Sk\SmartId\Exception\SmartIdException;
@@ -16,6 +19,8 @@ class SmartIdRestConnector implements SmartIdConnector
 {
   const AUTHENTICATE_BY_DOCUMENT_NUMBER_PATH = '/authentication/document/{documentNumber}';
   const AUTHENTICATE_BY_NATIONAL_IDENTITY_PATH = '/authentication/pno/{country}/{nationalIdentityNumber}';
+  const CERTIFICATE_CHOICE_BY_DOCUMENT_NUMBER_PATH = '/certificatechoice/document/{documentNumber}';
+  const CERTIFICATE_CHOICE_BY_NATIONAL_IDENTITY_PATH = '/certificatechoice/pno/{country}/{nationalIdentityNumber}';
   const SESSION_STATUS_URI = '/session/{sessionId}';
 
   /**
@@ -66,7 +71,39 @@ class SmartIdRestConnector implements SmartIdConnector
     return $this->postAuthenticationRequest( $url, $request );
   }
 
-  /**
+    /**
+     * @param string $documentNumber
+     * @param CertificateRequest $request
+     * @return CertificateChoiceResponse
+     */
+    public function getCertificate($documentNumber, CertificateRequest $request)
+    {
+        $url = rtrim($this->endpointUrl, '/') . self::CERTIFICATE_CHOICE_BY_DOCUMENT_NUMBER_PATH;
+        $url = str_replace('{documentNumber}', $documentNumber, $url);
+
+        return $this->postCertificateRequest($url, $request);
+    }
+
+    /**
+     * @param NationalIdentity $identity
+     * @param CertificateRequest $request
+     * @return CertificateChoiceResponse
+     */
+    public function getCertificateWithIdentity(NationalIdentity $identity, CertificateRequest $request)
+    {
+        $url = rtrim($this->endpointUrl, '/') . self::CERTIFICATE_CHOICE_BY_NATIONAL_IDENTITY_PATH;
+        $url = str_replace( array(
+            '{country}',
+            '{nationalIdentityNumber}',
+        ), array(
+            $identity->getCountryCode(),
+            $identity->getNationalIdentityNumber(),
+        ), $url );
+
+        return $this->postCertificateRequest($url, $request);
+    }
+
+    /**
    * @param SessionStatusRequest $request
    * @throws SessionNotFoundException
    * @return SessionStatus
@@ -103,6 +140,18 @@ class SmartIdRestConnector implements SmartIdConnector
     {
       throw new UserAccountNotFoundException();
     }
+  }
+
+  private function postCertificateRequest($url, CertificateRequest $request)
+  {
+      try
+      {
+          return $this->postRequest($url, $request->toArray(), 'Sk\SmartId\Api\Data\CertificateChoiceResponse');
+      }
+      catch(NotFoundException $e)
+      {
+          throw new CertificateNotFoundException();
+      }
   }
 
   /**

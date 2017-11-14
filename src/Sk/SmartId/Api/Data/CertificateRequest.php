@@ -96,4 +96,27 @@ class CertificateRequest {
         return $this;
     }
 
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $requiredArray = array(
+            'relyingPartyUUID' => $this->relyingPartyUUID,
+            'relyingPartyName' => $this->relyingPartyName,
+        );
+
+        if ( isset( $this->certificateLevel ) )
+        {
+            $requiredArray['certificateLevel'] = $this->certificateLevel;
+        }
+
+        if ( isset( $this->nonce ) )
+        {
+            $requiredArray['nonce'] = $this->nonce;
+        }
+
+        return $requiredArray;
+    }
+
 }
