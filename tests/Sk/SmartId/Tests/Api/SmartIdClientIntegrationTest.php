@@ -4,14 +4,24 @@ namespace Sk\SmartId\Tests\Api;
 use Sk\SmartId\Api\AuthenticationResponseValidator;
 use Sk\SmartId\Api\Data\AuthenticationHash;
 use Sk\SmartId\Api\Data\AuthenticationIdentity;
+use Sk\SmartId\Api\Data\CertificateLevelCode;
 use Sk\SmartId\Api\Data\SignableData;
 use Sk\SmartId\Api\Data\SmartIdAuthenticationResponse;
 use Sk\SmartId\Api\Data\SmartIdAuthenticationResult;
+use Sk\SmartId\Api\Data\SmartIdSignature;
+use Sk\SmartId\Api\Data\VerificationCodeCalculator;
 use Sk\SmartId\Tests\Setup;
 
 class SmartIdClientIntegrationTest extends Setup
 {
-  /**
+
+    public function setUp()
+    {
+        parent::setUp();
+        $GLOBALS['identity_number'] = '10101010005';
+    }
+
+    /**
    * @after
    */
   public function waitForMobileAppToFinish()
@@ -33,7 +43,7 @@ class SmartIdClientIntegrationTest extends Setup
         ->withRelyingPartyName( $GLOBALS['relying_party_name'] )
         ->withDocumentNumber( $GLOBALS['document_number'] )
         ->withAuthenticationHash( $authenticationHash )
-        ->withCertificateLevel( $GLOBALS['certificate_level'] )
+        ->withCertificateLevel(CertificateLevelCode::QUALIFIED)
         ->authenticate();
 
     $this->assertAuthenticationResponseCreated( $authenticationResponse, $authenticationHash->getDataToSign() );
@@ -53,12 +63,12 @@ class SmartIdClientIntegrationTest extends Setup
 
     $authenticationResponse = $this->client->authentication()
         ->createAuthentication()
-        ->withRelyingPartyUUID( $GLOBALS['relying_party_uuid'] )
-        ->withRelyingPartyName( $GLOBALS['relying_party_name'] )
-        ->withNationalIdentityNumber( $GLOBALS['national_identity_number'] )
-        ->withCountryCode( $GLOBALS['country_code'] )
+        ->withRelyingPartyUUID($GLOBALS['relying_party_uuid'])
+        ->withRelyingPartyName($GLOBALS['relying_party_name'])
+        ->withNationalIdentityNumber($GLOBALS['document_number'])
+        ->withCountryCode('EE')
         ->withAuthenticationHash( $authenticationHash )
-        ->withCertificateLevel( $GLOBALS['certificate_level'] )
+        ->withCertificateLevel(CertificateLevelCode::QUALIFIED)
         ->authenticate();
 
     $this->assertAuthenticationResponseCreated( $authenticationResponse, $authenticationHash->getDataToSign() );
@@ -107,20 +117,40 @@ class SmartIdClientIntegrationTest extends Setup
 
   /**
    * @test
+   * @group testing
    */
   public function getCertificateAndSignFullExample()
   {
       // Provide data bytes to be signed (Default hash type is SHA-512)
-      $dataToSign = new AuthenticationHash(ord('Hello World!'));
+      $dataToSign = new SignableData('Hello World!');
+      $verificationCode = VerificationCodeCalculator::calculate($dataToSign->calculateHash());
 
       // Calculate verification code
-      $this->assertEquals('4664', $dataToSign->calculateVerificationCode());
+      $this->assertEquals('4664', $verificationCode);
 
       $certificateResponse = $this->client->signing()
           ->getCertificate()
           ->withCountryCode('EE')
-          ->withNationalIdentityNumber('31111111111')
-          ->withCertificateLevel('ADVANCED');
+          ->withNationalIdentityNumber($GLOBALS['identity_number'])
+          ->withCertificateLevel(CertificateLevelCode::QUALIFIED)
+          ->fetch();
+
+      $documentNumber = $certificateResponse->getDocumentNumber();
+
+      $signature = $this->client->signing()
+          ->createSignature()
+          ->withDocumentNumber($documentNumber)
+          ->withSignableData($dataToSign)
+          ->withCertificateLevel(CertificateLevelCode::QUALIFIED)
+          ->sign();
+
+      $this->assertValidSignatureCreated($signature);
+  }
+
+  private function assertValidSignatureCreated(SmartIdSignature $signature)
+  {
+      $this->assertNotNull($signature);
+      $this->assertEquals('sha512WithRSAEncryption', $signature->getAlgorithmName());
   }
 
 }

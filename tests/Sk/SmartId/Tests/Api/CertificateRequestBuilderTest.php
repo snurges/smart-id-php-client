@@ -40,7 +40,6 @@ class CertificateRequestBuilderTest extends Setup {
     }
 
     /**
-     * @group testing
      * @test
      */
     public function getCertificate()

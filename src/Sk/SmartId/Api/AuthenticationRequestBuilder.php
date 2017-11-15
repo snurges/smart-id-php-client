@@ -42,11 +42,6 @@ class AuthenticationRequestBuilder extends SmartIdRequestBuilder
   /**
    * @var string
    */
-  private $displayText;
-
-  /**
-   * @var string
-   */
   private $nonce;
 
   /**
@@ -196,34 +191,6 @@ class AuthenticationRequestBuilder extends SmartIdRequestBuilder
         ->setDisplayText( $this->displayText )
         ->setNonce( $this->nonce );
     return $request;
-  }
-
-  /**
-   * @return string
-   */
-  private function getHashTypeString()
-  {
-    if ( isset( $this->hashType ) )
-    {
-      return $this->hashType;
-    }
-    else if ( isset( $this->authenticationHash ) )
-    {
-      return $this->authenticationHash->getHashType();
-    }
-    return $this->dataToSign->getHashType();
-  }
-
-  /**
-   * @return string
-   */
-  private function getHashInBase64()
-  {
-    if ( isset( $this->authenticationHash ) )
-    {
-      return $this->authenticationHash->calculateHashInBase64();
-    }
-    return $this->dataToSign->calculateHashInBase64();
   }
 
   /**

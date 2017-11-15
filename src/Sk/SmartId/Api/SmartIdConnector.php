@@ -8,6 +8,8 @@ use Sk\SmartId\Api\Data\CertificateRequest;
 use Sk\SmartId\Api\Data\NationalIdentity;
 use Sk\SmartId\Api\Data\SessionStatus;
 use Sk\SmartId\Api\Data\SessionStatusRequest;
+use Sk\SmartId\Api\Data\SignatureSessionRequest;
+use Sk\SmartId\Api\Data\SignatureSessionResponse;
 use Sk\SmartId\Exception\SessionNotFoundException;
 
 interface SmartIdConnector
@@ -46,5 +48,12 @@ interface SmartIdConnector
      * @return CertificateChoiceResponse
      */
     function getCertificateWithIdentity(NationalIdentity $identity, CertificateRequest $request);
+
+    /**
+     * @param string $documentNr
+     * @param SignatureSessionRequest $request
+     * @return SignatureSessionResponse
+     */
+    function sign($documentNumber, SignatureSessionRequest $request);
 
 }

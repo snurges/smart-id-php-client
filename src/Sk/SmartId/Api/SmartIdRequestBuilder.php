@@ -2,6 +2,7 @@
 namespace Sk\SmartId\Api;
 
 use Sk\SmartId\Api\Data\NationalIdentity;
+use Sk\SmartId\Api\Data\SignableData;
 use Sk\SmartId\Exception\InvalidParametersException;
 
 abstract class SmartIdRequestBuilder
@@ -35,6 +36,16 @@ abstract class SmartIdRequestBuilder
      * @var string
      */
     protected $nationalIdentityNumber;
+
+    /**
+     * @var SignableData
+     */
+    protected $dataToSign;
+
+    /**
+     * @var string
+     */
+    protected $displayText;
 
   /**
    * @param SmartIdConnector $connector
@@ -97,6 +108,34 @@ abstract class SmartIdRequestBuilder
   {
     return $this->relyingPartyName;
   }
+
+    /**
+     * @return string
+     */
+    protected function getHashTypeString()
+    {
+        if ( isset( $this->hashType ) )
+        {
+            return $this->hashType;
+        }
+        else if ( isset( $this->authenticationHash ) )
+        {
+            return $this->authenticationHash->getHashType();
+        }
+        return $this->dataToSign->getHashType();
+    }
+
+    /**
+     * @return string
+     */
+    protected function getHashInBase64()
+    {
+        if ( isset( $this->authenticationHash ) )
+        {
+            return $this->authenticationHash->calculateHashInBase64();
+        }
+        return $this->dataToSign->calculateHashInBase64();
+    }
 
     /**
      * @return NationalIdentity

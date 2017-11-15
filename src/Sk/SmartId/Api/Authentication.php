@@ -16,5 +16,4 @@ class Authentication extends AbstractApi
 
     return $builder;
   }
-
 }

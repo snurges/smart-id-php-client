@@ -8,6 +8,8 @@ use Sk\SmartId\Api\Data\CertificateRequest;
 use Sk\SmartId\Api\Data\NationalIdentity;
 use Sk\SmartId\Api\Data\SessionStatus;
 use Sk\SmartId\Api\Data\SessionStatusRequest;
+use Sk\SmartId\Api\Data\SignatureSessionRequest;
+use Sk\SmartId\Api\Data\SignatureSessionResponse;
 use Sk\SmartId\Exception\CertificateNotFoundException;
 use Sk\SmartId\Exception\NotFoundException;
 use Sk\SmartId\Exception\SessionNotFoundException;
@@ -17,6 +19,7 @@ use Sk\SmartId\Util\Curl;
 
 class SmartIdRestConnector implements SmartIdConnector
 {
+  const SIGN_BY_DOCUMENT_NUMBER_PATH = '/signature/document/{documentNumber}';
   const AUTHENTICATE_BY_DOCUMENT_NUMBER_PATH = '/authentication/document/{documentNumber}';
   const AUTHENTICATE_BY_NATIONAL_IDENTITY_PATH = '/authentication/pno/{country}/{nationalIdentityNumber}';
   const CERTIFICATE_CHOICE_BY_DOCUMENT_NUMBER_PATH = '/certificatechoice/document/{documentNumber}';
@@ -42,6 +45,19 @@ class SmartIdRestConnector implements SmartIdConnector
   }
 
   /**
+   * @param $documentNumber
+   * @param SignatureSessionRequest $request
+   * @return SignatureSessionResponse
+   */
+  public function sign($documentNumber, SignatureSessionRequest $request)
+  {
+      $url = rtrim($this->endpointUrl, '/') . self::SIGN_BY_DOCUMENT_NUMBER_PATH;
+      $url = str_replace('{documentNumber}', $documentNumber, $url);
+
+      return $this->postSignatureRequest($url, $request);
+  }
+
+    /**
    * @param string $documentNumber
    * @param AuthenticationSessionRequest $request
    * @return AuthenticationSessionResponse
@@ -99,7 +115,7 @@ class SmartIdRestConnector implements SmartIdConnector
             $identity->getCountryCode(),
             $identity->getNationalIdentityNumber(),
         ), $url );
-        var_dump($url);
+
         return $this->postCertificateRequest($url, $request);
     }
 
@@ -122,6 +138,18 @@ class SmartIdRestConnector implements SmartIdConnector
     {
       throw new SessionNotFoundException();
     }
+  }
+
+  private function postSignatureRequest($url, SignatureSessionRequest $request)
+  {
+      try
+      {
+          return $this->postRequest($url, $request->toArray(), 'Sk\SmartId\Api\Data\SignatureSessionResponse');
+      }
+      catch ( NotFoundException $e )
+      {
+          throw new UserAccountNotFoundException();
+      }
   }
 
   /**

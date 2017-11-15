@@ -19,4 +19,18 @@ class Signing extends AbstractApi {
         return $builder;
     }
 
+    /**
+     * Gets an instance  of the signature request builder
+     * @return SignatureRequestBuilder
+     */
+    public function createSignature()
+    {
+        $connector = new SmartIdRestConnector($this->client->getHostUrl());
+        $sessionStatusPoller = $this->createSessionStatusPoller($connector);
+        $builder = new SignatureRequestBuilder($connector, $sessionStatusPoller);
+        $this->populateBuilderFields($builder);
+
+        return $builder;
+    }
+
 }
